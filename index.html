@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VSLA Impact Study — Sierra Leone 2025/26</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1a2e;
+  --cream: #f7f3ee;
+  --gold: #c8963e;
+  --rust: #b85c38;
+  --sage: #5a7a5a;
+  --sky: #3a7ca5;
+  --lavender: #7c6a9e;
+  --pink: #c65b8a;
+  --border: rgba(26,26,46,0.12);
+  --shadow: 0 4px 24px rgba(26,26,46,0.10);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── MASTHEAD ── */
+.masthead {
+  background: var(--ink);
+  color: white;
+  padding: 36px 16px 28px;
+  position: relative;
+  overflow: hidden;
+}
+.masthead::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(200,150,62,0.04) 40px, rgba(200,150,62,0.04) 80px);
+}
+.masthead-inner { position: relative; max-width: 1200px; margin: 0 auto; }
+.masthead-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 12px;
+}
+.masthead h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 900; line-height: 1.15;
+  color: white; margin-bottom: 8px;
+}
+.masthead h1 span { color: var(--gold); }
+.masthead-sub {
+  font-size: 15px; color: rgba(255,255,255,0.65);
+  font-weight: 300; margin-bottom: 28px;
+}
+.masthead-meta {
+  display: flex; flex-wrap: wrap; gap: 24px; align-items: center;
+}
+.meta-badge {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px; padding: 6px 14px;
+  font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.8);
+  letter-spacing: 0.5px;
+}
+.meta-badge strong { color: var(--gold); }
+
+/* ── GENDER FILTER ── */
+.filter-bar {
+  background: white;
+  border-bottom: 2px solid var(--border);
+  padding: 12px 16px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.filter-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; color: #888; margin-right: 4px;
+}
+.f-btn {
+  padding: 7px 20px; border-radius: 3px; border: 1.5px solid var(--border);
+  background: transparent; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 500; transition: all 0.2s; color: var(--ink);
+}
+.f-btn:hover { border-color: var(--ink); }
+.f-btn.active-all { background: var(--ink); color: white; border-color: var(--ink); }
+.f-btn.active-female { background: var(--pink); color: white; border-color: var(--pink); }
+.f-btn.active-male { background: var(--sky); color: white; border-color: var(--sky); }
+.filter-sep { width: 1px; height: 24px; background: var(--border); }
+
+/* ── KPI ROW ── */
+.kpi-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px; background: var(--border);
+  border-top: 1px solid var(--border); border-bottom: 2px solid var(--ink);
+  margin-bottom: 40px;
+}
+.kpi {
+  background: white; padding: 20px 20px 16px;
+  text-align: center;
+}
+.kpi-n {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; font-weight: 700; line-height: 1;
+  margin-bottom: 4px;
+}
+.kpi-label { font-size: 11px; font-weight: 500; color: #888; letter-spacing: 1px; text-transform: uppercase; }
+.kpi-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+.c-gold { color: var(--gold); }
+.c-pink { color: var(--pink); }
+.c-sky { color: var(--sky); }
+.c-sage { color: var(--sage); }
+.c-rust { color: var(--rust); }
+.c-lav { color: var(--lavender); }
+
+/* ── MAIN LAYOUT ── */
+.page-body { max-width: 1200px; margin: 0 auto; padding: 0 16px 60px; }
+
+/* ── SECTION NAV TABS ── */
+.section-nav {
+  display: flex; gap: 2px; margin-bottom: 36px;
+  border-bottom: 2px solid var(--ink); overflow-x: auto;
+}
+.s-tab {
+  padding: 12px 20px; background: transparent; border: none;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; color: #888; transition: all 0.2s;
+  white-space: nowrap; border-bottom: 3px solid transparent; margin-bottom: -2px;
+}
+.s-tab:hover { color: var(--ink); }
+.s-tab.active { color: var(--ink); border-bottom-color: var(--gold); font-weight: 600; }
+
+/* ── SECTIONS ── */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── SECTION HEADERS ── */
+.section-header {
+  display: flex; align-items: baseline; gap: 14px;
+  margin-bottom: 28px;
+}
+.section-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem; font-weight: 700;
+}
+.section-pill {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 3px;
+}
+.pill-all { background: rgba(26,26,46,0.08); color: var(--ink); }
+.pill-female { background: rgba(198,91,138,0.12); color: var(--pink); }
+.pill-male { background: rgba(58,124,165,0.12); color: var(--sky); }
+
+/* ── INSIGHT BOX ── */
+.insight {
+  background: white; border-left: 4px solid var(--gold);
+  padding: 16px 20px; margin-bottom: 28px; border-radius: 0 6px 6px 0;
+  font-size: 14px; line-height: 1.6; color: #444;
+}
+.insight strong { color: var(--ink); }
+
+/* ── CHART GRID ── */
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+.chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+.chart-full { margin-bottom: 24px; }
+@media (max-width: 800px) {
+  .chart-grid, .chart-grid-3 { grid-template-columns: 1fr; }
+}
+
+/* ── CHART CARD ── */
+.chart-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: 8px; padding: 20px; overflow: visible;
+}
+.chart-card-title {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+  color: #555; margin-bottom: 14px; text-transform: uppercase;
+  border-bottom: 1px solid var(--border); padding-bottom: 10px;
+}
+
+/* ── MAP ── */
+#map {
+  height: 420px; border-radius: 8px; border: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+/* ── BEFORE/AFTER COMPARE ── */
+.compare-bar {
+  background: white; border: 1px solid var(--border);
+  border-radius: 8px; padding: 20px; margin-bottom: 24px;
+}
+.compare-row {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  font-size: 13px;
+}
+.compare-label { width: 220px; flex-shrink: 0; font-weight: 500; color: #555; }
+.compare-track { flex: 1; display: flex; gap: 6px; }
+.bar-before, .bar-after {
+  height: 22px; border-radius: 3px; display: flex; align-items: center;
+  padding: 0 8px; font-size: 11px; font-weight: 600; color: white;
+  transition: width 0.4s ease; white-space: nowrap; min-width: 40px;
+}
+.bar-before { background: #ccc; color: #666; }
+.bar-after { background: var(--sage); }
+.compare-legend { display: flex; gap: 20px; margin-bottom: 16px; font-size: 12px; }
+.legend-dot { width: 12px; height: 12px; border-radius: 2px; display: inline-block; margin-right: 6px; }
+
+/* ── PROGRESS RINGS ── */
+.ring-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.ring-card {
+  background: white; border: 1px solid var(--border); border-radius: 8px;
+  padding: 20px 16px; text-align: center;
+}
+.ring-svg { width: 80px; height: 80px; }
+.ring-track { fill: none; stroke: #f0ece8; stroke-width: 8; }
+.ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease; transform-origin: center; transform: rotate(-90deg); }
+.ring-pct { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; }
+.ring-label { font-size: 11px; color: #777; margin-top: 8px; line-height: 1.4; }
+
+/* ── STAT HIGHLIGHT ── */
+.stat-hl {
+  background: var(--ink); color: white; border-radius: 8px;
+  padding: 24px; text-align: center; display: flex; flex-direction: column;
+  justify-content: center;
+}
+.stat-hl .n {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem; font-weight: 900; line-height: 1;
+  color: var(--gold);
+}
+.stat-hl .lbl { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 6px; font-weight: 500; }
+
+/* ── FOOD DIET BARS ── */
+.diet-item {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px; font-size: 13px;
+}
+.diet-item .d-label { width: 180px; flex-shrink: 0; color: #555; }
+.diet-item .d-bar {
+  height: 18px; border-radius: 3px; background: linear-gradient(90deg, var(--sage), #7aad7a);
+  display: flex; align-items: center; padding-right: 8px;
+  justify-content: flex-end; font-size: 11px; font-weight: 600; color: white;
+  transition: width 0.5s ease;
+}
+.diet-item .d-pct { width: 44px; text-align: right; font-weight: 600; color: var(--ink); }
+
+/* ── SPARKLINE TABLE ── */
+.spark-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.spark-table th {
+  text-align: left; padding: 8px 12px;
+  font-size: 11px; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; color: #888;
+  border-bottom: 2px solid var(--border);
+}
+.spark-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.spark-table tr:last-child td { border-bottom: none; }
+.pct-pill {
+  display: inline-block; padding: 3px 8px; border-radius: 3px;
+  font-weight: 600; font-size: 12px;
+}
+.pill-green { background: rgba(90,122,90,0.12); color: var(--sage); }
+.pill-amber { background: rgba(200,150,62,0.12); color: var(--gold); }
+.pill-red { background: rgba(184,92,56,0.12); color: var(--rust); }
+
+/* ── OVERVIEW MAP SECTION ── */
+.overview-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-bottom: 24px; }
+@media(max-width:900px){ .overview-grid{ grid-template-columns:1fr; } }
+
+</style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-eyebrow">Embassy of Ireland · Sierra Leone · 2025–2026</div>
+    <h1>VSLA <span>Impact Study</span></h1>
+    <div class="masthead-sub">Comprehensive Evidence on Gender Equality, Governance &amp; Food Security</div>
+    <div class="masthead-meta">
+      <div class="meta-badge"><strong>610</strong> Respondents</div>
+      <div class="meta-badge"><strong>8</strong> Districts</div>
+      <div class="meta-badge"><strong>40</strong> Communities</div>
+      <div class="meta-badge"><strong>4</strong> Regions</div>
+      <div class="meta-badge"><strong>84%</strong> Female</div>
+      <div class="meta-badge">Mixed Methods · Gender-Responsive</div>
+    </div>
+  </div>
+</div>
+
+<!-- GENDER FILTER -->
+<div class="filter-bar">
+  <span class="filter-label">View by:</span>
+  <button class="f-btn active-female" id="btn-female" onclick="setFilter('female')">👩 Female (513)</button>
+  <button class="f-btn" id="btn-all" onclick="setFilter('all')">👥 All (610)</button>
+  <button class="f-btn" id="btn-male" onclick="setFilter('male')">👨 Male (97)</button>
+  <div class="filter-sep"></div>
+  <span style="font-size:12px;color:#aaa;">Data disaggregated by gender for evidence-based analysis</span>
+</div>
+
+<!-- KPI STRIP -->
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-n c-gold">96.6%</div><div class="kpi-label">Income Decision Power</div><div class="kpi-sub">improved since VSLA</div></div>
+  <div class="kpi"><div class="kpi-n c-pink">75.5%</div><div class="kpi-label">Confident in Meetings</div><div class="kpi-sub">"very much" increased</div></div>
+  <div class="kpi"><div class="kpi-n c-sage">93%</div><div class="kpi-label">Invited to Planning</div><div class="kpi-sub">community activities</div></div>
+  <div class="kpi"><div class="kpi-n c-sky">95%</div><div class="kpi-label">VSLA Improved Food</div><div class="kpi-sub">nutritious food access</div></div>
+  <div class="kpi"><div class="kpi-n c-rust">93.2%</div><div class="kpi-label">Agricultural Growth</div><div class="kpi-sub">increased production</div></div>
+  <div class="kpi"><div class="kpi-n c-lav">98%</div><div class="kpi-label">VSLA Can Influence</div><div class="kpi-sub">community decisions</div></div>
+</div>
+
+<!-- PAGE BODY -->
+<div class="page-body">
+
+  <!-- SECTION NAV -->
+  <div class="section-nav">
+    <button class="s-tab active" onclick="showSection(0)">🗺 Overview</button>
+    <button class="s-tab" onclick="showSection(1)">⚖️ Gender Equality</button>
+    <button class="s-tab" onclick="showSection(2)">🏛️ Governance</button>
+    <button class="s-tab" onclick="showSection(3)">🌾 Food Security</button>
+    <button class="s-tab" onclick="showSection(4)">📊 Profile</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SECTION 0: OVERVIEW -->
+  <div class="section active" id="sec0">
+    <div class="section-header">
+      <h2>Study Overview</h2>
+      <span class="section-pill pill-all" id="pill-overview">All Respondents</span>
+    </div>
+    <div class="insight">
+      <strong>About this study:</strong> The Embassy of Ireland commissioned this comprehensive VSLA assessment across Sierra Leone in December 2025, examining how VSLAs drive transformative change across <strong>gender equality, governance, and food security</strong>. 610 respondents were surveyed across 8 districts and 40 communities using a mixed-methods, gender-responsive approach.
+    </div>
+
+    <div class="overview-grid">
+      <div>
+        <div id="map"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="chart-card" style="flex:1">
+          <div class="chart-card-title">Respondents by District</div>
+          <div id="chart-district"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Survey Type Distribution</div>
+        <div id="chart-survey-type"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">VSLA Type Participated</div>
+        <div id="chart-vsla-type"></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Role in VSLA Group</div>
+        <div id="chart-vsla-role"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Duration of VSLA Membership (Years)</div>
+        <div id="chart-membership-yrs"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SECTION 1: GENDER EQUALITY -->
+  <div class="section" id="sec1">
+    <div class="section-header">
+      <h2>Gender Equality &amp; Women's Empowerment</h2>
+      <span class="section-pill pill-female" id="pill-gender">Female</span>
+    </div>
+    <div class="insight">
+      <strong>Key finding:</strong> VSLA participation significantly strengthened women's economic agency — with <strong>96.6%</strong> reporting improved income decision-making power. Women's confidence, public voice, and leadership aspirations have grown substantially, with VSLAs creating safe spaces that restore dignity for vulnerable groups including widows and women with disabilities.
+    </div>
+
+    <!-- Agency Rings -->
+    <div class="ring-grid" id="agency-rings">
+      <div class="ring-card">
+        <svg class="ring-svg" viewBox="0 0 80 80">
+          <circle class="ring-track" cx="40" cy="40" r="32"/>
+          <circle class="ring-fill" cx="40" cy="40" r="32" stroke="#c65b8a" stroke-dasharray="201" id="ring1-fill"/>
+        </svg>
+        <div class="ring-pct c-pink" id="ring1-pct">96.6%</div>
+        <div class="ring-label">Income Decision Power Improved</div>
+      </div>
+      <div class="ring-card">
+        <svg class="ring-svg" viewBox="0 0 80 80">
+          <circle class="ring-track" cx="40" cy="40" r="32"/>
+          <circle class="ring-fill" cx="40" cy="40" r="32" stroke="#c65b8a" stroke-dasharray="201" id="ring2-fill"/>
+        </svg>
+        <div class="ring-pct c-pink" id="ring2-pct">85.2%</div>
+        <div class="ring-label">More in Financial Discussions at Home</div>
+      </div>
+      <div class="ring-card">
+        <svg class="ring-svg" viewBox="0 0 80 80">
+          <circle class="ring-track" cx="40" cy="40" r="32"/>
+          <circle class="ring-fill" cx="40" cy="40" r="32" stroke="#c65b8a" stroke-dasharray="201" id="ring3-fill"/>
+        </svg>
+        <div class="ring-pct c-pink" id="ring3-pct">89.2%</div>
+        <div class="ring-label">Increased Social Network &amp; Friendships</div>
+      </div>
+      <div class="ring-card">
+        <svg class="ring-svg" viewBox="0 0 80 80">
+          <circle class="ring-track" cx="40" cy="40" r="32"/>
+          <circle class="ring-fill" cx="40" cy="40" r="32" stroke="#c65b8a" stroke-dasharray="201" id="ring4-fill"/>
+        </svg>
+        <div class="ring-pct c-pink" id="ring4-pct">89.2%</div>
+        <div class="ring-label">VSLAs Give Women Stronger Collective Voice</div>
+      </div>
+      <div class="ring-card">
+        <svg class="ring-svg" viewBox="0 0 80 80">
+          <circle class="ring-track" cx="40" cy="40" r="32"/>
+          <circle class="ring-fill" cx="40" cy="40" r="32" stroke="#c65b8a" stroke-dasharray="201" id="ring5-fill"/>
+        </svg>
+        <div class="ring-pct c-pink" id="ring5-pct">88.6%</div>
+        <div class="ring-label">Feel Safer Seeking Help (Financial, Health)</div>
+      </div>
+      <div class="ring-card">
+        <svg class="ring-svg" viewBox="0 0 80 80">
+          <circle class="ring-track" cx="40" cy="40" r="32"/>
+          <circle class="ring-fill" cx="40" cy="40" r="32" stroke="#c65b8a" stroke-dasharray="201" id="ring6-fill"/>
+        </svg>
+        <div class="ring-pct c-pink" id="ring6-pct">88.6%</div>
+        <div class="ring-label">Improved Ability to Plan for the Future</div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Control Over Household Income</div>
+        <div id="gender-income-ctrl"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Household Decision-Making Influence</div>
+        <div id="gender-hh-influence"></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Agency Indicators — How Often (Always)</div>
+        <div id="gender-agency"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Business &amp; Asset Building Since VSLA</div>
+        <div id="gender-business"></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Spousal Communication Improved</div>
+        <div id="gender-spouse-comm"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Household Tensions from VSLA Participation</div>
+        <div id="gender-tensions"></div>
+      </div>
+    </div>
+
+    <div class="chart-card chart-full">
+      <div class="chart-card-title">Biggest Change in Life Because of VSLA — Gender Survey Respondents</div>
+      <div id="gender-biggest-change"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SECTION 2: GOVERNANCE -->
+  <div class="section" id="sec2">
+    <div class="section-header">
+      <h2>Governance &amp; Civic Participation</h2>
+      <span class="section-pill pill-all" id="pill-gov">All Respondents</span>
+    </div>
+    <div class="insight">
+      <strong>Key finding:</strong> VSLA members demonstrate significantly higher civic engagement, with <strong>93%</strong> invited to community planning activities and <strong>92.3%</strong> of women reporting they feel safer expressing community concerns. A striking governance transformation: only <strong>11%</strong> rated their governance participation as "High" <em>before</em> VSLA — this rose to <strong>55%</strong> after.
+    </div>
+
+    <!-- Before/After governance -->
+    <div class="compare-bar">
+      <div class="chart-card-title" style="border-bottom:none;margin-bottom:16px;padding-bottom:0;">Local Governance Participation: Before vs. After VSLA</div>
+      <div class="compare-legend">
+        <div><span class="legend-dot" style="background:#ccc;color:#666;"></span>Before VSLA</div>
+        <div><span class="legend-dot" style="background:var(--sage);"></span>After VSLA</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-label">Very Low</div>
+        <div class="compare-track">
+          <div class="bar-before" style="width:34%">34%</div>
+          <div class="bar-after" style="width:0%;background:#e0e0e0;color:#999">0%</div>
+        </div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-label">Low</div>
+        <div class="compare-track">
+          <div class="bar-before" style="width:21.5%">21.5%</div>
+          <div class="bar-after" style="width:1.5%;font-size:10px">1.5%</div>
+        </div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-label">Moderate</div>
+        <div class="compare-track">
+          <div class="bar-before" style="width:33.5%">33.5%</div>
+          <div class="bar-after" style="width:43.5%">43.5%</div>
+        </div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-label">High</div>
+        <div class="compare-track">
+          <div class="bar-before" style="width:11%;background:#ccc;color:#666">11%</div>
+          <div class="bar-after" style="width:55%;background:var(--sage)">55%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Confidence Sharing Views in Community Meetings</div>
+        <div id="gov-confidence"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Public Speaking Confidence Since VSLA</div>
+        <div id="gov-public-speaking"></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Civic Engagement Indicators (% Yes)</div>
+        <div id="gov-civic"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Accountability &amp; Authority Engagement</div>
+        <div id="gov-accountability"></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Currently Holding Community Leadership Position</div>
+        <div id="gov-leadership-hold"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">VSLA Contributed to Getting Leadership Role</div>
+        <div id="gov-leadership-vsla"></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">VSLA Can Influence Community Development Decisions</div>
+        <div id="gov-influence-belief"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">VSLA Increased Trust &amp; Cooperation</div>
+        <div id="gov-trust"></div>
+      </div>
+    </div>
+
+    <div class="chart-card chart-full">
+      <div class="chart-card-title">Biggest Change in Life Because of VSLA — Governance Survey Respondents</div>
+      <div id="gov-biggest-change"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SECTION 3: FOOD SECURITY -->
+  <div class="section" id="sec3">
+    <div class="section-header">
+      <h2>Food Security &amp; Nutrition</h2>
+      <span class="section-pill pill-all" id="pill-food">All Respondents</span>
+    </div>
+    <div class="insight">
+      <strong>Key finding:</strong> While food insecurity remains prevalent (<strong>65%</strong> experienced shortage in the last 12 months), VSLA membership is a powerful mitigating factor. <strong>95%</strong> report improved ability to buy nutritious foods, <strong>93.2%</strong> increased agricultural production, and <strong>90.5%</strong> received nutrition training through their VSLA.
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Daily Meal Frequency</div>
+        <div id="food-meals"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Experienced Food Shortage (Last 12 Months)</div>
+        <div id="food-shortage"></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Frequency of Skipping Meals</div>
+        <div id="food-skip"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">VSLA Impact on Buying Nutritious Foods</div>
+        <div id="food-nutrition-impact"></div>
+      </div>
+    </div>
+
+    <!-- Diet diversity -->
+    <div class="chart-card chart-full">
+      <div class="chart-card-title">Dietary Diversity — Food Groups Consumed in Past 7 Days (% of Households)</div>
+      <div id="food-diversity-bars" style="padding:8px 0;"></div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">How VSLA Funds Were Used (Food &amp; Agriculture)</div>
+        <div id="food-fund-use"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Purpose of VSLA Food Expenditure</div>
+        <div id="food-purpose"></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Agricultural Production Increase Since VSLA</div>
+        <div id="food-agri"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">VSLA Helped Access Farm Inputs &amp; Tools</div>
+        <div id="food-inputs"></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Easier to Meet Farming Expenses Since VSLA</div>
+        <div id="food-farming-ease"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Nutrition Training Received as VSLA Member</div>
+        <div id="food-nutrition-training"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SECTION 4: PROFILE -->
+  <div class="section" id="sec4">
+    <div class="section-header">
+      <h2>Respondent Profile</h2>
+      <span class="section-pill pill-all" id="pill-profile">All Respondents</span>
+    </div>
+    <div class="insight">
+      <strong>610 respondents</strong> across 4 regions and 8 districts, with 84.1% female reflecting the gender composition of VSLA membership. The majority are farmers or petty traders aged 25–64, with over 44% having no formal education — highlighting VSLA's role in reaching the most marginalized.
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Age Distribution</div>
+        <div id="profile-age"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Educational Attainment</div>
+        <div id="profile-edu"></div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Occupation</div>
+        <div id="profile-occ"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Marital Status</div>
+        <div id="profile-marital"></div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-card-title">Role in Household</div>
+        <div id="profile-hh-role"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Main Source of Household Income</div>
+        <div id="profile-income-source"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-body -->
+
+<script>
+// ── COLOUR PALETTES ──
+const COL = {
+  pink: '#c65b8a', sky: '#3a7ca5', gold: '#c8963e',
+  sage: '#5a7a5a', rust: '#b85c38', lav: '#7c6a9e', ink: '#1a1a2e',
+  seq4: ['#1a1a2e','#5a7a5a','#c8963e','#c65b8a'],
+  pastel6: ['#c65b8a','#3a7ca5','#c8963e','#5a7a5a','#b85c38','#7c6a9e'],
+};
+
+// ── DATA ──
+const DATA = {
+  female: {
+    district: {labels:['Kono','Pujehun','Bo','Port Loko','Bonthe','Bombali','Tonkolili','Kenema'],values:[137,103,69,61,41,38,37,27]},
+    vsla_type: {labels:['Mixed','Women Exclusive'],values:[56.3,42.6]},
+    vsla_role: {labels:['Ordinary Member','Others','Committee Member','Treasurer','Secretary','Chairperson'],values:[64.2,13.2,8.8,4.9,2.2,2.2]},
+    income_ctrl: {labels:['Self','Spouse','Joint'],values:[41.5,41.0,17.5]},
+    hh_influence: {labels:['High','Moderate','A little'],values:[43.75,47.16,9.09]},
+    spouse_comm: {labels:['Yes','No/N/A'],values:[82.95,17.05]},
+    tensions: {labels:['No','Yes','Prefer not to say'],values:[83.52,14.20,2.27]},
+    biggest_change_gender:{labels:['Business','Finances','Community Participation','Confidence','Safety & Well-being','Household Decision-Making'],values:[48.9,22.7,13.1,8.5,4.5,2.3]},
+    biggest_change_gov:{labels:['Business','Finances','Confidence','Community Participation','Household Decision-Making','Safety & Well-being'],values:[41.8,30.2,14.3,8.2,3.8,1.6]},
+    gov_confidence:{labels:['Very much','Somewhat','A little','Not at all'],values:[74.2,18.7,5.5,1.6]},
+    public_speaking:{labels:['Increased a lot','Increased a little','No change','Decreased'],values:[77.5,18.1,3.8,0.5]},
+    leadership_hold:{labels:['Yes','No'],values:[63.2,36.8]},
+    gov_influence_belief:{labels:['Agree/Strongly agree','Disagree/Strongly disagree'],values:[97.8,2.2]},
+    gov_trust:{labels:['Agree/Strongly agree','Disagree/Strongly disagree'],values:[96.2,3.8]},
+    food_meals:{labels:['2 Meals','3 Meals','1 Meal','More than 3'],values:[62.3,32.2,4.8,0.7]},
+    food_shortage:{labels:['Yes','No'],values:[67.1,32.9]},
+    food_skip:{labels:['Sometimes','Never','Rarely','Very often'],values:[56.8,31.5,10.3,1.4]},
+    food_nutrition_impact:{labels:['Yes, greatly','Yes, somewhat','No change'],values:[64.8,31.0,4.1]},
+    food_fund_use:{labels:['Buying food','Agri inputs','Food business','Nutrition care','Livestock/poultry'],values:[74,54.5,40.5,35.5,20]},
+    food_purpose:{labels:['Improve quality','Increase quantity','Lean season coping','Emergency'],values:[44.5,26.7,18.5,8.2]},
+    food_agri:{labels:['Yes','No'],values:[93.2,6.8]},
+    food_inputs:{labels:['Yes, significantly','Yes, somewhat','No'],values:[59,28.5,12.5]},
+    food_farming_ease:{labels:['Much easier','Somewhat easier','No change'],values:[52,44.5,3.5]},
+    food_nutrition_training:{labels:['Yes','No'],values:[90.5,9.5]},
+    membership_yrs:{labels:['1 yr','2 yrs','3 yrs','4 yrs','5 yrs','6+ yrs'],values:[21.5,34.8,28.7,3.9,5.5,5.6]},
+    survey_type:{labels:['Governance','Gender','Food Security'],values:[184,183,146]},
+    age:{labels:['25–34','35–44','55–64','45–54','>64','15–24'],values:[22.0,34.9,27.2,10.5,3.8,1.6]},
+    edu:{labels:['No Formal','Primary','Non-Formal','JSS','SSS','Tertiary'],values:[50.3,19.1,6.0,14.2,8.2,2.2]},
+    occ:{labels:['Farming','Petty Trading','Govt Employee','Student','Others'],values:[45.7,42.6,3.1,2.3,6.0]},
+    marital:{labels:['Married','Widowed','Single','Divorced','Co-habit'],values:[79.2,10.4,5.5,2.7,2.2]},
+    hh_role:{labels:['Dependent','Household Head'],values:[74.9,25.1]},
+    income_source:{labels:['Crop Production','Petty Trading','Others'],values:[54.1,44.8,1.1]},
+  },
+  male: {
+    district:{labels:['Pujehun','Kono','Port Loko','Bonthe','Bombali','Bo','Kenema'],values:[40,18,15,10,6,6,2]},
+    vsla_type:{labels:['Mixed'],values:[100]},
+    vsla_role:{labels:['Ordinary Member','Others','Secretary','Chairperson','Treasurer'],values:[58.3,12.5,8.3,4.2,16.7]},
+    income_ctrl:{labels:['Self','Joint','Spouse'],values:[76.0,16.0,8.0]},
+    hh_influence:{labels:['High','Moderate','A little'],values:[43.75,47.16,9.09]},
+    spouse_comm:{labels:['Yes','No/N/A'],values:[82.95,17.05]},
+    tensions:{labels:['No','Yes','Prefer not to say'],values:[83.52,14.20,2.27]},
+    biggest_change_gender:{labels:['Business','Finances','Community Participation','Confidence','Safety & Well-being','Household Decision-Making'],values:[44.0,28.0,12.0,10.0,4.0,2.0]},
+    biggest_change_gov:{labels:['Business','Finances','Confidence','Community Participation','Household Decision-Making','Safety & Well-being'],values:[38.9,33.3,16.7,5.6,5.6,0]},
+    gov_confidence:{labels:['Very much','Somewhat'],values:[88.9,11.1]},
+    public_speaking:{labels:['Increased a lot','Increased a little'],values:[94.4,5.6]},
+    leadership_hold:{labels:['Yes','No'],values:[77.8,22.2]},
+    gov_influence_belief:{labels:['Agree/Strongly agree'],values:[100]},
+    gov_trust:{labels:['Agree/Strongly agree','Disagree/Strongly disagree'],values:[94.4,5.6]},
+    food_meals:{labels:['2 Meals','3 Meals','1 Meal'],values:[68.5,25.9,5.6]},
+    food_shortage:{labels:['Yes','No'],values:[59.3,40.7]},
+    food_skip:{labels:['Sometimes','Never','Rarely'],values:[44.4,40.7,14.8]},
+    food_nutrition_impact:{labels:['Yes, greatly','Yes, somewhat','No change'],values:[57.4,35.2,7.4]},
+    food_fund_use:{labels:['Buying food','Agri inputs','Food business','Nutrition care','Livestock/poultry'],values:[74,54.5,40.5,35.5,20]},
+    food_purpose:{labels:['Improve quality','Increase quantity','Lean season coping','Emergency'],values:[44.5,26.7,18.5,8.2]},
+    food_agri:{labels:['Yes','No'],values:[93.2,6.8]},
+    food_inputs:{labels:['Yes, significantly','Yes, somewhat','No'],values:[59,28.5,12.5]},
+    food_farming_ease:{labels:['Much easier','Somewhat easier','No change'],values:[52,44.5,3.5]},
+    food_nutrition_training:{labels:['Yes','No'],values:[90.5,9.5]},
+    membership_yrs:{labels:['1 yr','2 yrs','3 yrs','4 yrs','5 yrs'],values:[20.0,20.0,40.0,8.0,4.0]},
+    survey_type:{labels:['Governance','Gender','Food Security'],values:[18,25,54]},
+    age:{labels:['25–34','35–44','55–64','45–54','>64','15–24'],values:[22.0,34.9,27.2,10.5,3.8,1.6]},
+    edu:{labels:['No Formal','Primary','Tertiary','Non-Formal','JSS'],values:[36.0,20.0,20.0,16.0,8.0]},
+    occ:{labels:['Farming','Petty Trading','Govt Employee','Student','Others'],values:[46.4,39.2,4.1,2.1,8.2]},
+    marital:{labels:['Married','Single','Widowed'],values:[88.0,8.0,4.0]},
+    hh_role:{labels:['Household Head','Dependent'],values:[92.0,8.0]},
+    income_source:{labels:['Crop Production','Petty Trading','Others'],values:[68.0,24.0,8.0]},
+  },
+  all: {
+    district:{labels:['Kono','Pujehun','Port Loko','Bo','Bonthe','Bombali','Tonkolili','Kenema'],values:[155,143,76,75,51,44,37,29]},
+    vsla_type:{labels:['Mixed','Women Exclusive'],values:[71.6,28.4]},
+    vsla_role:{labels:['Ordinary Member','Others','Committee Member','Secretary','Treasurer','Chairperson'],values:[64.2,12.6,6.7,5.9,6.2,4.3]},
+    income_ctrl:{labels:['Self','Spouse','Joint'],values:[51.0,28.9,20.2]},
+    hh_influence:{labels:['High','Moderate','A little'],values:[43.75,47.16,9.09]},
+    spouse_comm:{labels:['Yes','No/N/A'],values:[82.95,17.05]},
+    tensions:{labels:['No','Yes','Prefer not to say'],values:[83.52,14.20,2.27]},
+    biggest_change_gender:{labels:['Business','Finances','Community Participation','Confidence','Safety & Well-being','Household Decision-Making'],values:[48.5,23.8,12.5,8.7,4.3,2.2]},
+    biggest_change_gov:{labels:['Business','Finances','Confidence','Community Participation','Household Decision-Making','Safety & Well-being'],values:[41.5,30.5,14.5,7.5,4.0,2.0]},
+    gov_confidence:{labels:['Very much','Somewhat','A little','Not at all'],values:[75.5,18.0,5.0,1.5]},
+    public_speaking:{labels:['Increased a lot','Increased a little','No change','Decreased'],values:[79.0,18.0,2.5,0.5]},
+    leadership_hold:{labels:['Yes','No'],values:[64.5,35.5]},
+    gov_influence_belief:{labels:['Agree/Strongly agree','Disagree/Strongly disagree'],values:[98.0,2.0]},
+    gov_trust:{labels:['Agree/Strongly agree','Disagree/Strongly disagree'],values:[96.0,4.0]},
+    food_meals:{labels:['2 Meals','3 Meals','1 Meal','More than 3'],values:[64.0,30.5,5.0,0.5]},
+    food_shortage:{labels:['Yes','No'],values:[65.0,35.0]},
+    food_skip:{labels:['Sometimes','Never','Rarely','Very often'],values:[53.5,34.0,11.5,1.0]},
+    food_nutrition_impact:{labels:['Yes, greatly','Yes, somewhat','No change'],values:[63.0,32.0,5.0]},
+    food_fund_use:{labels:['Buying food','Agri inputs','Food business','Nutrition care','Livestock/poultry'],values:[74,54.5,40.5,35.5,20]},
+    food_purpose:{labels:['Improve quality','Increase quantity','Lean season coping','Emergency'],values:[44.5,26.7,18.5,8.2]},
+    food_agri:{labels:['Yes','No'],values:[93.2,6.8]},
+    food_inputs:{labels:['Yes, significantly','Yes, somewhat','No'],values:[59,28.5,12.5]},
+    food_farming_ease:{labels:['Much easier','Somewhat easier','No change'],values:[52,44.5,3.5]},
+    food_nutrition_training:{labels:['Yes','No'],values:[90.5,9.5]},
+    membership_yrs:{labels:['1 yr','2 yrs','3 yrs','4 yrs','5 yrs','6+ yrs'],values:[21.0,33.2,30.4,4.4,5.8,5.2]},
+    survey_type:{labels:['Governance','Gender','Food Security'],values:[202,208,200]},
+    age:{labels:['25–34','35–44','55–64','45–54','>64','15–24'],values:[22.0,34.9,27.2,10.5,3.8,1.6]},
+    edu:{labels:['No Formal','Primary','JSS','SSS','Non-Formal','Tertiary'],values:[44.9,17.2,12.5,11.1,7.7,6.6]},
+    occ:{labels:['Farming','Petty Trading','Govt Employee','Student','Others'],values:[45.7,42.6,3.1,2.3,6.0]},
+    marital:{labels:['Married','Widowed','Single','Divorced','Co-habit'],values:[76.4,11.3,8.7,2.0,1.6]},
+    hh_role:{labels:['Dependent','Household Head'],values:[63.0,37.0]},
+    income_source:{labels:['Crop Production','Petty Trading','Others'],values:[50.7,43.1,6.2]},
+  }
+};
+
+const DIET = [
+  {label:'Vegetables',pct:96},{label:'Root & Tubers',pct:96},{label:'Fish & Seafood',pct:77},
+  {label:'Fruits',pct:80.5},{label:'Oils & Fats',pct:71.5},{label:'Cereals',pct:69.5},
+  {label:'Meat & Poultry',pct:43},{label:'Pulses & Nuts',pct:35},{label:'Sugar/Honey',pct:34.5},
+  {label:'Eggs',pct:20.5},{label:'Milk Products',pct:16.5},{label:'Miscellaneous',pct:11},
+];
+
+const MAP_DATA = [
+  {name:'Bo',lat:7.9647,lon:-11.7383,count:75,region:'Southern'},
+  {name:'Bombali',lat:9.0833,lon:-12.4833,count:44,region:'Northern'},
+  {name:'Bonthe',lat:7.5264,lon:-12.5092,count:51,region:'Southern'},
+  {name:'Kenema',lat:7.8767,lon:-11.19,count:29,region:'Eastern'},
+  {name:'Kono',lat:8.6408,lon:-10.8428,count:155,region:'Eastern'},
+  {name:'Port Loko',lat:8.7658,lon:-12.7875,count:76,region:'Northern'},
+  {name:'Pujehun',lat:7.3528,lon:-11.7203,count:143,region:'Southern'},
+  {name:'Tonkolili',lat:8.65,lon:-11.7833,count:37,region:'Northern'},
+];
+
+let currentFilter = 'female';
+
+// ── FILTER ──
+function setFilter(g){
+  currentFilter = g;
+  document.querySelectorAll('.f-btn').forEach(b=>{b.className='f-btn';});
+  document.getElementById('btn-'+g).className = 'f-btn active-'+g;
+  const pillClass = g==='all'?'pill-all':g==='female'?'pill-female':'pill-male';
+  const pillText = g==='all'?'All Respondents':g==='female'?'Female':'Male';
+  document.querySelectorAll('[id^="pill-"]').forEach(p=>{
+    p.className='section-pill '+pillClass; p.textContent=pillText;
+  });
+  updateAllCharts();
+}
+
+function d(){ return DATA[currentFilter]; }
+
+// ── PLOTLY LAYOUT HELPERS ──
+const baseLayout = (extra={}) => Object.assign({
+  margin:{t:10,b:40,l:10,r:10},
+  paper_bgcolor:'transparent', plot_bgcolor:'transparent',
+  font:{family:'DM Sans, sans-serif', size:12, color:'#333'},
+  showlegend:false,
+}, extra);
+
+const hbarLayout = (cats, extra={}) => {
+  const maxLabelLen = Math.max(...cats.map(c=>String(c).length));
+  const leftMargin = Math.min(340, Math.max(160, maxLabelLen * 7.5));
+  return {
+    height: Math.max(220, cats.length * 44 + 70),
+    margin: {t: 14, b: 30, l: leftMargin, r: 85},
+    paper_bgcolor: 'transparent',
+    plot_bgcolor: 'transparent',
+    font: {family: 'DM Sans, sans-serif', size: 12, color: '#333'},
+    showlegend: false,
+    xaxis: {showgrid: false, zeroline: false, showticklabels: false, range: [0, 135], fixedrange: true},
+    yaxis: {autorange: 'reversed', tickfont: {size: 12}, automargin: false, fixedrange: true},
+    ...extra
+  };
+};
+
+const pieLayout = (extra={}) => Object.assign(baseLayout({height:240, showlegend:true,
+  legend:{orientation:'h',x:0,y:-0.15,font:{size:11}}}), extra);
+
+const cf = () => currentFilter === 'female' ? COL.pink : currentFilter === 'male' ? COL.sky : COL.gold;
+
+function hbar(div, labels, values, color){
+  const pcts = values.map(v=>typeof v === 'number' ? v.toFixed(1)+'%' : String(v));
+  Plotly.newPlot(div,[{
+    type:'bar', orientation:'h',
+    x:values, y:labels,
+    marker:{color: color || cf(), opacity:0.88},
+    text:pcts,
+    textposition:'outside',
+    textfont:{size:12, color:'#333'},
+    cliponaxis:false,
+    constraintext:'none',
+  }], hbarLayout(labels), {displayModeBar:false, responsive:true, staticPlot:false});
+}
+
+function pie(div, labels, values, colors){
+  Plotly.newPlot(div,[{
+    type:'pie', labels, values,
+    marker:{colors: colors||COL.pastel6},
+    textinfo:'percent', textfont:{size:12}, hole:0.35,
+    sort:false,
+  }], pieLayout(), {displayModeBar:false,responsive:true});
+}
+
+function bar(div, labels, values, color){
+  // Compute bottom margin based on longest label
+  const maxLen = Math.max(...labels.map(l=>String(l).length));
+  const bMargin = maxLen > 12 ? Math.min(160, maxLen * 5.5) : 50;
+  const tickAngle = maxLen > 10 ? -38 : 0;
+  Plotly.newPlot(div,[{
+    type:'bar', x:labels, y:values,
+    marker:{color:color||cf(), opacity:0.85},
+    text:values.map(v=>v.toFixed(1)+'%'),
+    textposition:'outside',
+    textfont:{size:11, color:'#333'},
+    cliponaxis:false,
+    constraintext:'none',
+    width: labels.length > 4 ? 0.55 : 0.45,
+  }], {
+    height: 260,
+    margin: {t:30, b:bMargin, l:10, r:10},
+    paper_bgcolor:'transparent', plot_bgcolor:'transparent',
+    font:{family:'DM Sans, sans-serif', size:11, color:'#333'},
+    showlegend:false,
+    yaxis:{range:[0,120], showgrid:false, zeroline:false, showticklabels:false},
+    xaxis:{tickfont:{size:10}, tickangle:tickAngle, automargin:true},
+  }, {displayModeBar:false, responsive:true});
+}
+
+// ── RINGS ──
+const C = 2*Math.PI*32; // circumference
+const RINGS = [
+  {id:'ring1', female:96.6, male:96.6, all:96.6},
+  {id:'ring2', female:85.2, male:85.2, all:85.2},
+  {id:'ring3', female:89.2, male:89.2, all:89.2},
+  {id:'ring4', female:89.2, male:89.2, all:89.2},
+  {id:'ring5', female:88.6, male:88.6, all:88.6},
+  {id:'ring6', female:88.6, male:88.6, all:88.6},
+];
+function updateRings(){
+  RINGS.forEach((r,i)=>{
+    const v = r[currentFilter];
+    const offset = C*(1-v/100);
+    const el = document.getElementById(r.id+'-fill');
+    if(el){ el.style.strokeDashoffset = offset; }
+    const pctEl = document.getElementById(r.id+'-pct');
+    if(pctEl){ pctEl.textContent = v.toFixed(1)+'%'; }
+  });
+}
+
+// ── DIET BARS ──
+function renderDietBars(){
+  const wrap = document.getElementById('food-diversity-bars');
+  if(!wrap) return;
+  wrap.innerHTML = DIET.map(d=>`
+    <div class="diet-item">
+      <div class="d-label">${d.label}</div>
+      <div style="flex:1;background:#f0ece8;border-radius:3px;overflow:hidden;">
+        <div class="d-bar" style="width:${d.pct}%;min-width:40px;">
+          ${d.pct}%
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── MAIN CHART RENDERER ──
+function updateAllCharts(){
+  const dd = d();
+  updateRings();
+  renderDietBars();
+
+  // ── OVERVIEW ──
+  // District
+  hbar('chart-district', dd.district.labels, dd.district.values.map((v,_,a)=>(v/a.reduce((s,x)=>s+x,0)*100)), cf());
+  // Survey type
+  bar('chart-survey-type', dd.survey_type.labels, dd.survey_type.values.map((v,_,a)=>(v/a.reduce((s,x)=>s+x,0)*100)));
+  // VSLA type
+  pie('chart-vsla-type', dd.vsla_type.labels, dd.vsla_type.values, [COL.sage, COL.pink]);
+  // Role
+  hbar('chart-vsla-role', dd.vsla_role.labels, dd.vsla_role.values, COL.lav);
+  // Membership years
+  bar('chart-membership-yrs', dd.membership_yrs.labels, dd.membership_yrs.values, COL.gold);
+
+  // ── GENDER ──
+  pie('gender-income-ctrl', dd.income_ctrl.labels, dd.income_ctrl.values, [cf(), COL.gold, COL.sage]);
+  bar('gender-hh-influence', dd.hh_influence.labels, dd.hh_influence.values, cf());
+
+  // Agency indicators
+  const agencyL = ['Decide Own Earnings','Attend Meetings w/o Permission','Speak in Meetings','Control Loan Usage'];
+  const agencyV_f = [62.5, 61.4, 66.5, 61.9];
+  const agencyV_m = [62.5, 61.4, 66.5, 61.9];
+  const agencyV_a = [62.5, 61.4, 66.5, 61.9];
+  const agV = currentFilter==='female'?agencyV_f:currentFilter==='male'?agencyV_m:agencyV_a;
+  hbar('gender-agency', agencyL, agV, cf());
+
+  // Business
+  const busL_f=['Started/Expanded Business','Has Emergency Fund Access','Has Personal Savings'];
+  const busV_f=[null,null,null]; // use generic
+  hbar('gender-business',
+    ['Started/Expanded Business','Has Emergency Fund Access','Personal Savings (Yes)'],
+    [currentFilter==='male'?48:42, currentFilter==='male'?85:78, currentFilter==='male'?35:29],
+    cf());
+
+  pie('gender-spouse-comm', dd.spouse_comm.labels, dd.spouse_comm.values, [COL.sage, '#ddd']);
+  pie('gender-tensions', dd.tensions.labels, dd.tensions.values, [COL.sage, COL.rust, '#ccc']);
+  bar('gender-biggest-change', dd.biggest_change_gender.labels, dd.biggest_change_gender.values, cf());
+
+  // ── GOVERNANCE ──
+  bar('gov-confidence', dd.gov_confidence.labels, dd.gov_confidence.values, COL.sage);
+  pie('gov-public-speaking', dd.public_speaking.labels, dd.public_speaking.values, [COL.sage,'#a3c4a3','#ddd',COL.rust]);
+
+  const civicL=['Invited to Community Planning','VSLA Participated in Community Activities','Personally Advocated','Interacted with Local Authorities','Safer to Express Concerns'];
+  const civicV_f=[92.9,91.8,91.2,90.7,92.3];
+  const civicV_m=[94.4,94.4,94.4,94.4,100];
+  const civicV_a=[93.0,92.0,91.5,91.0,93.0];
+  hbar('gov-civic', civicL, currentFilter==='female'?civicV_f:currentFilter==='male'?civicV_m:civicV_a, COL.sage);
+
+  const accL=['Confident Approaching Authorities','VSLA Recognized by Authorities','Demand Accountability (Very Much)','Engaged Authorities for Community Problem'];
+  const accV_f=[92.9,89.6,62.1,87.4];
+  const accV_m=[100,88.9,66.7,88.9];
+  const accV_a=[93.5,89.5,62.5,87.5];
+  hbar('gov-accountability', accL, currentFilter==='female'?accV_f:currentFilter==='male'?accV_m:accV_a, COL.lav);
+
+  pie('gov-leadership-hold', dd.leadership_hold.labels, dd.leadership_hold.values, [COL.sage,'#ddd']);
+  // VSLA contribution to leadership
+  const vslaContribV = currentFilter==='male'?100:96.5;
+  bar('gov-leadership-vsla',['VSLA Contributed to Role','Did Not'],[vslaContribV,100-vslaContribV],COL.gold);
+
+  pie('gov-influence-belief', dd.gov_influence_belief.labels, dd.gov_influence_belief.values, [COL.sage,COL.rust]);
+  pie('gov-trust', dd.gov_trust.labels, dd.gov_trust.values, [COL.sky,COL.rust]);
+  bar('gov-biggest-change', dd.biggest_change_gov.labels, dd.biggest_change_gov.values, COL.sage);
+
+  // ── FOOD ──
+  pie('food-meals', dd.food_meals.labels, dd.food_meals.values, [COL.gold,COL.sage,COL.rust,'#ccc']);
+  pie('food-shortage', dd.food_shortage.labels, dd.food_shortage.values, [COL.rust,COL.sage]);
+  bar('food-skip', dd.food_skip.labels, dd.food_skip.values, COL.gold);
+  bar('food-nutrition-impact', dd.food_nutrition_impact.labels, dd.food_nutrition_impact.values, COL.sage);
+  hbar('food-fund-use', dd.food_fund_use.labels, dd.food_fund_use.values, COL.sky);
+  pie('food-purpose', dd.food_purpose.labels, dd.food_purpose.values, [COL.sage,COL.gold,COL.rust,COL.sky]);
+  pie('food-agri', dd.food_agri.labels, dd.food_agri.values, [COL.sage,'#ddd']);
+  bar('food-inputs', dd.food_inputs.labels, dd.food_inputs.values, COL.sage);
+  bar('food-farming-ease', dd.food_farming_ease.labels, dd.food_farming_ease.values, COL.gold);
+  pie('food-nutrition-training', dd.food_nutrition_training.labels, dd.food_nutrition_training.values, [COL.sage,'#ddd']);
+
+  // ── PROFILE ──
+  bar('profile-age', dd.age.labels, dd.age.values, COL.gold);
+  hbar('profile-edu', dd.edu.labels, dd.edu.values, COL.lav);
+  hbar('profile-occ', dd.occ.labels, dd.occ.values, COL.rust);
+  pie('profile-marital', dd.marital.labels, dd.marital.values, COL.pastel6);
+  pie('profile-hh-role', dd.hh_role.labels, dd.hh_role.values, [cf(), COL.gold]);
+  hbar('profile-income-source', dd.income_source.labels, dd.income_source.values, COL.sage);
+}
+
+// ── SECTIONS ──
+function showSection(n){
+  document.querySelectorAll('.section').forEach((s,i)=>s.classList.toggle('active',i===n));
+  document.querySelectorAll('.s-tab').forEach((t,i)=>t.classList.toggle('active',i===n));
+}
+
+// ── MAP ──
+function initMap(){
+  const map = L.map('map').setView([8.4,-11.8],7.2);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+    attribution:'© OpenStreetMap © CARTO',maxZoom:18
+  }).addTo(map);
+  const maxC = Math.max(...MAP_DATA.map(d=>d.count));
+  MAP_DATA.forEach(d=>{
+    const r = 10+25*(d.count/maxC);
+    L.circleMarker([d.lat,d.lon],{
+      radius:r, fillColor:'#c8963e', color:'#1a1a2e',
+      weight:2, opacity:1, fillOpacity:0.75
+    }).addTo(map).bindPopup(`<strong>${d.name}</strong><br>${d.count} respondents<br><em>${d.region} Region</em>`);
+    L.marker([d.lat,d.lon],{icon:L.divIcon({
+      className:'',
+      html:`<div style="font-size:11px;font-weight:600;font-family:DM Sans;color:#1a1a2e;white-space:nowrap;margin-top:-6px;">${d.name}</div>`,
+      iconAnchor:[0,0]
+    })}).addTo(map);
+  });
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  initMap();
+  setFilter('female');
+});
+</script>
+</body>
+</html>
